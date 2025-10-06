@@ -9,10 +9,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const cors = require('cors');
 
 app.use(cors({
-    origin: 'http://localhost:5173', // allow your frontend
+    origin: 'http://localhost:5173', 
     methods: ['GET','POST','PUT','DELETE'],
 }));
-
 const config = {
     server: process.env.DB_SERVER || "192.168.1.123",
     database: process.env.DB_DATABASE || "TuVanKhachHang",
@@ -22,10 +21,11 @@ const config = {
     pool: { max: 10, min: 0, idleTimeoutMillis: 30000 }
 };
 
-app.post('/api/tuvan', async (req, res) => {
-    const { TenDichVu, TenHinhThuc, HoTen, MaVung, SoDienThoai } = req.body;
 
-    if (!HoTen || !MaVung || !SoDienThoai) {
+app.post('/api/tuvan', async (req, res) => {
+    const { TenDichVu, HoTen, MaVung, SoDienThoai } = req.body;
+
+    if (!TenDichVu || !HoTen || !MaVung || !SoDienThoai) {
         return res.status(400).json({ error: "Thiếu dữ liệu bắt buộc" });
     }
 
@@ -33,8 +33,8 @@ app.post('/api/tuvan', async (req, res) => {
         const pool = await sql.connect(config);
 
         await pool.request()
-            .input('TenDichVu', sql.NVarChar, TenDichVu || null)
-            .input('TenHinhThuc', sql.NVarChar, TenHinhThuc || '')
+            .input('TenDichVu', sql.NVarChar, TenDichVu)
+            .input('TenHinhThuc', sql.NVarChar, '') 
             .input('HoTen', sql.NVarChar, HoTen)
             .input('MaVung', sql.NVarChar, MaVung)
             .input('SoDienThoai', sql.NVarChar, SoDienThoai)
@@ -49,12 +49,12 @@ app.post('/api/tuvan', async (req, res) => {
             .query('SELECT TOP 1 * FROM YeuCau ORDER BY YeuCauID DESC');
 
         res.json({ message: "✅ Lưu thành công!", data: result.recordset });
+
     } catch (err) {
         console.error("DB error:", err);
         res.status(500).json({ error: err.message });
     }
 });
-
 
 app.post('/api/tuvanemail', async (req, res) => {
     const { TenDichVu, HoTen, Email, MaVung, SoDienThoai, TieuDe, NoiDung, HinhThucID } = req.body;
